@@ -43,7 +43,7 @@ function PersonMessage() {
   const [text, setText] = useState('');
   const [sendMessage] = useMutation(SEND_MESSAGE);
   const fileInputRef = useRef(null);
-  // console.log(user)
+  console.log(user)
   const handleClick = () => {
     fileInputRef.current.click();
   };

@@ -11,7 +11,7 @@ import express from 'express';
 import bodyParser from 'body-parser'
 import User from './models/User.js';
 import Employee from './models/Employees.js';
-import { GeneralMessage,PhotoMessage,TextContent} from './models/Message.js';
+import Messages from './models/Message.js';
 import ReciverInfo from './models/ReciverInfo.js';
 import SenderInfo from './models/SenderInfo.js';
 import fs from 'fs';
@@ -76,6 +76,7 @@ const books = [
 ]
 
 const typeDefs = gql`
+scalar Date
 scalar Readable 
 scalar Upload
 type User {
@@ -106,13 +107,25 @@ type IndivdualEmp{
   data:String
   id:ID
 }
+type Message{
+  _id:ID
+  Sender:ID
+  Reciver:ID
+  MessageType:String
+  TextMessage:String
+  PhotoMessage:String,
+  FileMessage:String,
+  FileName:String,
+  FileSize:Float,
+  PosteDate:Date
+}
 type Query{
     books:[Book]
     employees:[Emp] 
     employee:IndivdualEmp
     getUserById(id: ID!): Emp  
     getFiles:String
-    getMessage(senderId:ID,reciverId:ID):String
+    getMessage(senderId:ID,reciverId:ID):[Message]
 }
 type Mutation{
     addUser(name:String!,author:String!):ID!,
@@ -223,20 +236,26 @@ const resolvers = {
         
         },
         getMessage:async(parent, {senderId,reciverId })=>{
-          console.log("yes you got it",senderId,reciverId)
-          const senderInfo = await SenderInfo.find({SenderId:senderId,ReciverId:reciverId}).populate('MessageId')
-          const reciverInfo =  await ReciverInfo.find({SenderId:reciverId,ReciverId:senderId}).populate('MessageId')
-          // console.log(senderInfo.concat(reciverInfo))
-          // const t = await TextContent.find({generalMessageId:'65f321a2ce53278d7ec8ed39'})
-          // console.log(t[0])
-          const allMessage = []
-          await senderInfo.concat(reciverInfo).forEach( async(msg)=>{
-            const text =await TextContent.find({generalMessageId:msg.MessageId._id})
-            allMessage.push(text[0])
-          })
-              console.log(allMessage)
+          // console.log("yes you got it",senderId,reciverId)
+          // const senderInfo = await SenderInfo.find({SenderId:senderId,ReciverId:reciverId}).populate('MessageId')
+          // const reciverInfo =  await ReciverInfo.find({SenderId:reciverId,ReciverId:senderId}).populate('MessageId')
+          const SenderInfo =  await Messages.find({Sender:senderId,Reciver:reciverId})
+          const ReciverInfo =  await Messages.find({Sender:reciverId,Reciver:senderId})
+          const Messagelist = SenderInfo.concat(ReciverInfo);
+          console.log(Messagelist)
+          Messagelist.sort((a, b) => new Date(a.PosteDate) - new Date(b.PosteDate));
+          console.log("after Sorted", Messagelist)
+
+
+          // const allMessage = []
+          // await Promise.all(senderInfo.concat(reciverInfo).map(async(msg) => {
+          //     const text = await TextContent.find({generalMessageId: msg.MessageId._id}).sort({ date: 1 })
+          //     allMessage.push(text[0])
+          // }))
+          // console.log(allMessage)
+          
            
-           return "hi"
+           return Messagelist
         }
     },
     Mutation:{
@@ -371,34 +390,48 @@ const resolvers = {
         },
         sendMessage: async(parent, { type ,text,reciverId,senderId }) => {
               if(type==="Text"){
-              const random = Math.random().toString(36).slice(2,15)
-              const generalMessage = new GeneralMessage({
-                type,
-                random
-              })
-              await generalMessage.save()
-            const gen = await GeneralMessage.findOne({random:random})
+                const messages = new Messages({
+                  Sender:senderId,
+                  Reciver:reciverId,
+                  MessageType:type,
+                  TextMessage:text
+                })
+                await messages.save();
+    //             Sender:Schema.Types.ObjectId,
+    // Reciver: Schema.Types.ObjectId,
+    // MessageType:String,
+    // TextMessage:String,
+    // PhotoMessage:Buffer,
+    // FileMessage:Buffer,
+    // FileName:String,
+    // FileSize:Number
+            //   const random = Math.random().toString(36).slice(2,15)
+            //   const generalMessage = new GeneralMessage({
+            //     type,
+            //     random
+            //   })
+            //   await generalMessage.save()
+            // const gen = await GeneralMessage.findOne({random:random})
             
-              const textContent = new TextContent({
-                content:text,
-                generalMessageId:gen._id
-              })
-              await textContent.save()
-              const senderInfo = new SenderInfo({ SenderId:senderId,
-                ReciverId:reciverId,
-                MessageType:type,
-                MessageId:gen._id
-              });      
-              const reciverInfo = new ReciverInfo({
+            //   const textContent = new TextContent({
+            //     content:text,
+            //     generalMessageId:gen._id
+            //   })
+            //   await textContent.save()
+            //   const senderInfo = new SenderInfo({ SenderId:senderId,
+            //     ReciverId:reciverId,
+            //     MessageType:type,
+            //     MessageId:gen._id
+            //   });      
+            //   const reciverInfo = new ReciverInfo({
                 
-                ReciverId:reciverId,
-                SenderId:senderId,
-                MessageType:type,
-                MessageId:gen._id
-              }); 
-              await senderInfo.save();
-              await reciverInfo.save();
-          // console.log(reciverId,' ',senderId)
+            //     ReciverId:reciverId,
+            //     SenderId:senderId,
+            //     MessageType:type,
+            //     MessageId:gen._id
+            //   }); 
+            //   await senderInfo.save();
+            //   await reciverInfo.save();
                     return `TextMessage sent: ${text}`;
                   }
                   return `PhotoMessage sent`;
