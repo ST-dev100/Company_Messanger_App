@@ -1,0 +1,8 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components'; 
+@import 'tailwindcss/utilities';
+
+.mm{
+  background-color: aqua;
+  margin-top: 10px;
+}
