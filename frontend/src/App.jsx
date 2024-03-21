@@ -12,16 +12,15 @@ import Test2 from './assets/Compnonents/Home/Test2';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client';
 import  createUploadLink  from 'apollo-upload-client/createUploadLink.mjs';
+import { WebSocketLink } from '@apollo/link-ws';
+// import { WebSocketLink } from '@apollo/client/link/ws';
+import { split } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
 
 import { setContext } from '@apollo/client/link/context';
 import LoginPage from './assets/Compnonents/Home/Login/Login';
 
-// const client = new ApolloClient({
-//   link: createUploadLink({
-//     uri: 'http://localhost:4000/graphql',
-//   }), 
-//   cache: new InMemoryCache()
-// });
+
 const uploadLink = createUploadLink({
   uri: 'http://localhost:4000/graphql',
 });
@@ -40,8 +39,29 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const wsLink = new WebSocketLink({
+  uri: `ws://localhost:4000/graphql`, // Change the URL to your WebSocket endpoint
+  options: {
+    reconnect: true,
+    connectionParams: {
+      // You can include any necessary connection parameters here
+    },
+  },
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  uploadLink,
+);
+
 const client = new ApolloClient({
-  link: authLink.concat(uploadLink),
+  link: authLink.concat(splitLink),
   cache: new InMemoryCache(),
 });
 

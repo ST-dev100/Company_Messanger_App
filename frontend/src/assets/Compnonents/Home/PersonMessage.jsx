@@ -34,6 +34,12 @@ const GET_USER_BY_ID = gql`
 const SEND_MESSAGE = gql`
   mutation SendMessage($type:String,$text: String!,$senderId:ID,$reciverId:ID) {
     sendMessage(type:$type,text: $text,senderId:$senderId,reciverId:$reciverId) 
+    {
+      _id
+  Sender
+  Reciver
+  MessageType
+    }
   }
 `;
 
@@ -118,8 +124,8 @@ function PersonMessage() {
  {user && <MessageBoard sender={user}/>}
 
         
- <div className="flex items-center border border-gray-300 gap-2 rounded-lg p-2 mt-32">
-      <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full border-none focus:outline-none px-2" placeholder="Type a message"></textarea>
+ <div className="flex items-center border border-gray-300 gap-2 rounded-lg p-2 mt-0 ">
+      <input type="text" value={text} onChange={(e) => setText(e.target.value)} className="w-full border-none rounded-lg focus:outline-none px-2 h-10" placeholder="Type a message"/>
       <div className="flex items-center space-x-2">
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold  px-4 rounded-full">
           <Send onClick={handleSend}/>

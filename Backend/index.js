@@ -1,4 +1,5 @@
 import {gql,ApolloServer} from 'apollo-server-express';
+// import {PubSub} from 'apollo-server'
 // import streamToString from 'stream-to-string';
 // const Upload = require('graphql-upload/Upload.mjs');   
 import Upload from 'graphql-upload/Upload.mjs';  
@@ -20,6 +21,12 @@ import Grid from 'gridfs-stream';
 import { resolve } from 'path';
 import {Readable} from 'stream';
 import jwt from 'jsonwebtoken';
+import {SubscriptionServer} from 'subscriptions-transport-ws';
+import {createServer} from 'http';
+import { execute, subscribe } from 'graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+const pubsub = new PubSub();
 
 
 const app = express();
@@ -127,6 +134,10 @@ type Query{
     getFiles:String
     getMessage(senderId:ID,reciverId:ID):[Message]
 }
+
+type Subscription {
+  messageAdded:[Message]
+}
 type Mutation{
     addUser(name:String!,author:String!):ID!,
     createUser(userName: String!, password: String!): User!,
@@ -134,9 +145,9 @@ type Mutation{
     uploadPhoto(file: Upload!): String
     uploadVideo(file2: Upload!): String   
     loginUser(username:String,password:String):String
-    sendMessage(type:String,text: String!,senderId:ID,reciverId:ID): String
+    sendMessage(type:String,text: String!,senderId:ID,reciverId:ID): Message
     
-} 
+}  
 
 `
 const getGridFS = () => { 
@@ -145,14 +156,9 @@ const getGridFS = () => {
   }
 
   return gfs; 
-};   
-// const FileSchema = new mongoose.Schema({
-//   filename: String,
-//   contentType: String,
-//   metadata: Object
-// });
-// const File = mongoose.model('File', FileSchema);
-
+};
+const subscribers = [];
+const onMessagesUpdates = (fn) => subscribers.push(fn)
 const resolvers = {
     Query:{ 
         books(_,args,context){
@@ -211,50 +217,20 @@ const resolvers = {
           }
           const writableStream = fs.createWriteStream(file.filename);
           const downloadStream =await gfs.openDownloadStreamByName(file.filename);
-        //  downloadStream.on('data',(chunk)=>{
-            
-        //     console.log(chunk)
-        //   })
-
          downloadStream.pipe(writableStream);
-        //  const readST = fs.createReadStream('downloaded_example.jpg')
-        // fs.createReadStream('downloaded_example.jpg').on('data',(chunk)=>{
-        //     console.log("start",chunk)
-        // })
-
         const ReadableStream = fs.createReadStream(file.filename);
-      //  downloadStream.on('data',(chunk)=>{
-      //     buf = chunk.toString('base64')
-      //     return buf
-      //   })
-      //   downloadStream.on('end',()=>{
-      //     console.log('end')
-      //   })
         let buff = fs.readFileSync(file.filename)
         const x = Buffer.from(buff).toString('base64')
           return x
         
         },
         getMessage:async(parent, {senderId,reciverId })=>{
-          // console.log("yes you got it",senderId,reciverId)
-          // const senderInfo = await SenderInfo.find({SenderId:senderId,ReciverId:reciverId}).populate('MessageId')
-          // const reciverInfo =  await ReciverInfo.find({SenderId:reciverId,ReciverId:senderId}).populate('MessageId')
           const SenderInfo =  await Messages.find({Sender:senderId,Reciver:reciverId})
           const ReciverInfo =  await Messages.find({Sender:reciverId,Reciver:senderId})
           const Messagelist = SenderInfo.concat(ReciverInfo);
           console.log(Messagelist)
           Messagelist.sort((a, b) => new Date(a.PosteDate) - new Date(b.PosteDate));
-          console.log("after Sorted", Messagelist)
-
-
-          // const allMessage = []
-          // await Promise.all(senderInfo.concat(reciverInfo).map(async(msg) => {
-          //     const text = await TextContent.find({generalMessageId: msg.MessageId._id}).sort({ date: 1 })
-          //     allMessage.push(text[0])
-          // }))
-          // console.log(allMessage)
-          
-           
+          console.log("after Sorted", Messagelist) 
            return Messagelist
         }
     },
@@ -324,14 +300,6 @@ const resolvers = {
           });
           await employee.save();
          })
-          // await Employee.deleteMany() 
-      // const buffer = Buffer.from(file, 'base64');
-
-      // console.log(buffer);
-  
-
-      // fs.writeFileSync('last.jpg', buffer, 'binary');  
-
           return "jjj";    
         },
         uploadVideo:async(_, { file2 })=> {
@@ -347,29 +315,19 @@ const resolvers = {
                 await Files.create({
                   filename: filename,
                   size: uploadStream.bytesWritten,
-                  uploadDate: new Date() 
+                  uploadDate: new Date()  
                 });
                 resolve(true);
               })
               .on('error', (error) => {
                 reject(error);
               });
-          });                
-          // const wrs = getGridFS().createWriteStream({_id:new mongoose.Types.ObjectId(),
-          // filename, contentType: mimetype,
-          // metadata: { description: 'This can be any file' }});
-          // stream.pipe(wrs)         
-          // wrs.on('close', (file) => {
-          //   console.log('File uploaded successfully:', file.filename);  
-          // });
+          }); 
           return 'File uploaded successfully!';
         },
         loginUser:async(_,args,context,info)=>
         {
-            // console.log(args)
-            let userName =await Employee.find({userName:args.username})     
-            // console.log(info);
-                // console.log(context.req.headers.authorization)
+            let userName =await Employee.find({userName:args.username})   
             if(userName.length)
             {
               let x = await bcrypt.compare(args.password,userName[0].password);
@@ -397,61 +355,53 @@ const resolvers = {
                   TextMessage:text
                 })
                 await messages.save();
-    //             Sender:Schema.Types.ObjectId,
-    // Reciver: Schema.Types.ObjectId,
-    // MessageType:String,
-    // TextMessage:String,
-    // PhotoMessage:Buffer,
-    // FileMessage:Buffer,
-    // FileName:String,
-    // FileSize:Number
-            //   const random = Math.random().toString(36).slice(2,15)
-            //   const generalMessage = new GeneralMessage({
-            //     type,
-            //     random
-            //   })
-            //   await generalMessage.save()
-            // const gen = await GeneralMessage.findOne({random:random})
-            
-            //   const textContent = new TextContent({
-            //     content:text,
-            //     generalMessageId:gen._id
-            //   })
-            //   await textContent.save()
-            //   const senderInfo = new SenderInfo({ SenderId:senderId,
-            //     ReciverId:reciverId,
-            //     MessageType:type,
-            //     MessageId:gen._id
-            //   });      
-            //   const reciverInfo = new ReciverInfo({
-                
-            //     ReciverId:reciverId,
-            //     SenderId:senderId,
-            //     MessageType:type,
-            //     MessageId:gen._id
-            //   }); 
-            //   await senderInfo.save();
-            //   await reciverInfo.save();
-                    return `TextMessage sent: ${text}`;
+                const SenderInfo =  await Messages.find({Sender:senderId,Reciver:reciverId})
+                const ReciverInfo =  await Messages.find({Sender:reciverId,Reciver:senderId})
+                const Messagelist = SenderInfo.concat(ReciverInfo);
+                pubsub.publish('MESSAGE_ADDED', { messageAdded: Messagelist });
+                // pubsub.publish('MESSAGE_ADDED', { messageAdded: messages });
+                console.log(messages)
+                    return messages;
                   }
-                  return `PhotoMessage sent`;
+                  return null;
 
       }   
     },  
+    Subscription: {
+      messageAdded: {
+        subscribe: () => pubsub.asyncIterator('MESSAGE_ADDED')
+      }
+    },
 }
-
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+})
 
 const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context: ({ req,res }) => ({ req,res }),
+    schema,
+    context: ({ req,res }) => ({ req,res,pubsub }),
 })
 
 async function startApolloServer()
 {
   await server.start();
   server.applyMiddleware({app})
-  app.listen({port:4000},()=>console.log(`Server is running on port ${server.graphqlPath}`))        
+  const httpServer = createServer(app);
+  // app.listen({port:4000},()=>console.log(`Server is running on port ${server.graphqlPath}`))
+  httpServer.listen({ port: 4000 }, () => {
+    console.log(`Server is running on port ${server.graphqlPath}`);
+    new SubscriptionServer({
+      execute,
+      subscribe,
+      schema,
+      onConnect: (connectionParams, webSocket, context) => {
+        console.log("Client connected");
+      }}, {
+      server: httpServer,
+      path: '/graphql',
+    });
+  });        
 }
 
 startApolloServer().catch((error)=>{

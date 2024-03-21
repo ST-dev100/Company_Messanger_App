@@ -1,8 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
-import UserProfileReducer from './UserProfileSlice';
+import rootReducer from './RootReducer';
 
-export const store = configureStore({
-  reducer: {
-    user: UserProfileReducer
-  }
+const store = configureStore({
+  reducer: rootReducer,
 });
+
+export {store};
+
+// import { configureStore } from '@reduxjs/toolkit';
+// import UserProfileReducer from './UserProfileSlice';
+
+// export const store = configureStore({
+//   reducer: {
+//     user: UserProfileReducer
+//   }
+// });
