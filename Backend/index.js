@@ -136,7 +136,7 @@ type Query{
 }
 
 type Subscription {
-  messageAdded:[Message]
+  messageAdded:Message
 }
 type Mutation{
     addUser(name:String!,author:String!):ID!,
@@ -358,7 +358,7 @@ const resolvers = {
                 const SenderInfo =  await Messages.find({Sender:senderId,Reciver:reciverId})
                 const ReciverInfo =  await Messages.find({Sender:reciverId,Reciver:senderId})
                 const Messagelist = SenderInfo.concat(ReciverInfo);
-                pubsub.publish('MESSAGE_ADDED', { messageAdded: Messagelist });
+                pubsub.publish('MESSAGE_ADDED', { messageAdded: messages });
                 // pubsub.publish('MESSAGE_ADDED', { messageAdded: messages });
                 console.log(messages)
                     return messages;

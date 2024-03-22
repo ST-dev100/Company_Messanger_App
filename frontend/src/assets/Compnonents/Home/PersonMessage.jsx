@@ -31,40 +31,13 @@ const GET_USER_BY_ID = gql`
     }
   }
 `;
-const SEND_MESSAGE = gql`
-  mutation SendMessage($type:String,$text: String!,$senderId:ID,$reciverId:ID) {
-    sendMessage(type:$type,text: $text,senderId:$senderId,reciverId:$reciverId) 
-    {
-      _id
-  Sender
-  Reciver
-  MessageType
-    }
-  }
-`;
+
 
 
 function PersonMessage() {
   const user = useSelector(state => state.user.user);
-  const [text, setText] = useState('');
-  const [sendMessage] = useMutation(SEND_MESSAGE);
-  const fileInputRef = useRef(null);
-  console.log(user)
-  const handleClick = () => {
-    fileInputRef.current.click();
-  };
-  const handleSend = () => {
-    if(user){
-    sendMessage({ variables: { type:'Text',text,reciverId:id,senderId:user.id } })
-    return 1
-    }
-  };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    // Do something with the selected file
-    console.log(file);
-  };
+
   const {id} = useParams();
   const { loading, error, data } = useQuery(GET_USER_BY_ID, {
     variables: { id: id },
@@ -124,30 +97,7 @@ function PersonMessage() {
  {user && <MessageBoard sender={user}/>}
 
         
- <div className="flex items-center border border-gray-300 gap-2 rounded-lg p-2 mt-0 ">
-      <input type="text" value={text} onChange={(e) => setText(e.target.value)} className="w-full border-none rounded-lg focus:outline-none px-2 h-10" placeholder="Type a message"/>
-      <div className="flex items-center space-x-2">
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold  px-4 rounded-full">
-          <Send onClick={handleSend}/>
-        </button>
-        <button className="bg-transparent hover:bg-gray-100 text-gray-600 p-2 rounded-full" onClick={handleClick}>
-          <Attachment />
-        </button>
-        <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-      />
-        <button className="bg-transparent hover:bg-gray-100 text-gray-600 p-2 rounded-full">
-          <Mic/>
-        </button>
-        <button className="bg-transparent hover:bg-gray-100 text-gray-600 p-2 rounded-full">
-          <Videocam/>
-        </button>
-   
-      </div>
-    </div>
+
 
     
    </div>

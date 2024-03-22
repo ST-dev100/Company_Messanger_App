@@ -9,6 +9,8 @@ const DisplayMessageSlice = createSlice({
     addPost(state, action) {
       if(Array.isArray(action.payload)){
         state.posts = action.payload
+      // state.posts.push(action.payload);
+
       return
       }
       state.posts.push(action.payload);
