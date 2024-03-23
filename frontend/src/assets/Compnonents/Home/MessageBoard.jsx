@@ -47,7 +47,21 @@ const MessageBoard = () => {
   const user = useSelector(state => state.user.user);
   const { id } = useParams();
   
-  const [sendMessage] = useMutation(SEND_MESSAGE);
+  const [sendMessage] = useMutation(SEND_MESSAGE, {
+    update(cache, { data: { sendMessage } }) {
+      const { getMessage } = cache.readQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+      });
+  
+      cache.writeQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+        data: { getMessage: [...getMessage, sendMessage] },
+      });
+    },
+  });
+  
   const { loading, error, data } = useQuery(GET_MESSAGE, {
     variables: { senderId: user.id, reciverId: id },
   });

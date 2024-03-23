@@ -145,7 +145,7 @@ type Mutation{
     uploadPhoto(file: Upload!): String
     uploadVideo(file2: Upload!): String   
     loginUser(username:String,password:String):String
-    sendMessage(type:String,text: String!,senderId:ID,reciverId:ID): Message
+    sendMessage(type:String,text: String!,senderId:ID,reciverId:ID): Message 
     
 }  
 
@@ -380,7 +380,7 @@ const schema = makeExecutableSchema({
 
 const server = new ApolloServer({
     schema,
-    context: ({ req,res }) => ({ req,res,pubsub }),
+    context: ({ req,res }) => ({ req,res,pubsub }), 
 })
 
 async function startApolloServer()
