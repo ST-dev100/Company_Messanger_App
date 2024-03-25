@@ -34,6 +34,7 @@ app.use(GraphQLUpload())
 // Increase payload size limit
 const conn = mongoose.connection;
 let gfs;
+let gfs2;
 
 mongoose.connect('mongodb://127.0.0.1:27017/Messanger')
   .then(() => {
@@ -53,7 +54,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/Messanger')
       bucketName: 'uploads'
     });
 
-
+    gfs2 = new mongoose.mongo.GridFSBucket(conn.db, {
+      bucketName: 'messageFiles'
+    });
   });
   conn.on('error', console.error.bind(console, 'connection error:'));
   const Files = mongoose.model('Files', {

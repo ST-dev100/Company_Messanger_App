@@ -36,6 +36,7 @@ const SEND_MESSAGE = gql`
       Sender
       Reciver
       MessageType
+      TextMessage
     }
   }
 `;
@@ -49,18 +50,19 @@ const MessageBoard = () => {
   
   const [sendMessage] = useMutation(SEND_MESSAGE, {
     update(cache, { data: { sendMessage } }) {
-      const { getMessage } = cache.readQuery({
-        query: GET_MESSAGE,
-        variables: { senderId: user.id, reciverId: id },
-      });
-  
-      cache.writeQuery({
-        query: GET_MESSAGE,
-        variables: { senderId: user.id, reciverId: id },
-        data: { getMessage: [...getMessage, sendMessage] },
-      });
+        const { getMessage } = cache.readQuery({
+            query: GET_MESSAGE,
+            variables: { senderId: user.id, reciverId: id },
+        });
+
+        cache.writeQuery({
+            query: GET_MESSAGE,
+            variables: { senderId: user.id, reciverId: id },
+            data: { getMessage: [...getMessage, sendMessage] },
+        });
     },
-  });
+});
+
   
   const { loading, error, data } = useQuery(GET_MESSAGE, {
     variables: { senderId: user.id, reciverId: id },
@@ -107,7 +109,7 @@ const MessageBoard = () => {
 
   const handleSend = () => {
     if (user) {
-      sendMessage({ variables: { type: 'Text', text, reciverId: id, senderId: user.id } });
+      sendMessage({ variables: { type: 'Text',text: text, reciverId: id, senderId: user.id } });
       setText(''); 
     }
   };
