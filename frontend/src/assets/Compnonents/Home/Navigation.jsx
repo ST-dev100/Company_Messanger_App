@@ -61,7 +61,7 @@ function Navigation() {
             <div className='bg-white mt-1 ml-2 border-4 '>
               <div className='flex items-center h-16  p-2 bg-white rounded-md shadow-md'>
                 <input type="text" placeholder='Search...' className='flex-grow border-2 px-2 py-1 rounded-lg w-6 text-gray-700 focus:outline-none bg-white'/>
-                <SearchIcon className='w-6 h-6 text-gray-700'/>
+                <SearchIcon className='w-6 h-6 text-gray-700 cursor-pointer'/>
                 
               </div>
               <div className="w-full h-96 overflow-y-auto">
@@ -75,7 +75,7 @@ function Navigation() {
                       <li key={i} className="flex items-center py-2">
                         <img src={d.dataa} alt={d.usernName} className="w-10 h-10 rounded-full" />
                         <Link to={`/messages/${d.id}`}><span className="ml-2">{d.userName}</span></Link>
-                        <MoreHorizIcon className='ml-auto'/>
+                        <MoreHorizIcon className='ml-auto cursor-pointer'/>
                       </li>
                     ))}
                   </ul>

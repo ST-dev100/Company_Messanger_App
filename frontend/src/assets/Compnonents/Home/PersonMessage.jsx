@@ -8,8 +8,11 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import {useParams} from 'react-router-dom'
 import { useQuery,useMutation,gql } from '@apollo/client';
 import { Send, Attachment, Mic, Videocam } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { useSelector,useDispatch} from 'react-redux';
 import MessageBoard from './MessageBoard';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
+import {deleteAlert,clearCancel} from '../../Store/UserProfileSlice';
 
 const contacts = [
   { id: 1, username: 'john_doe', image: '/simon.JPG' },
@@ -36,14 +39,19 @@ const GET_USER_BY_ID = gql`
 
 function PersonMessage() {
   const user = useSelector(state => state.user.user);
-
-
+  const checked = useSelector(state => state.user.checked);
+  const showdeleteAlert = useSelector(state => state.user.showPopup);
+  const dispatch = useDispatch();
   const {id} = useParams();
   const { loading, error, data } = useQuery(GET_USER_BY_ID, {
     variables: { id: id },
   });
   let newMap = "/simon.JPG";
-
+    
+  const showDeleteAlert = ()=>{
+    console.log("dddd")
+    dispatch(deleteAlert())
+   }
   if(!loading && !error && data)
   {
     // console.log(data.getUserById)
@@ -63,13 +71,21 @@ function PersonMessage() {
     {
       console.log(err)
     }
-      
-
+    
     
   }
   return (
     <div className='bg-gray-300 h-screen  sm:col-span-5 col-span-5 lg:col-span-2'>
-    <div className="flex items-center justify-between p-4 bg-white">
+    {checked && 
+      <div className='grid grid-cols-4 p-4 bg-white'>
+        <div>
+          <ClearIcon className='cursor-pointer' onClick={()=>dispatch(clearCancel())}/>
+        </div>
+        <div>
+          <DeleteIcon className='cursor-pointer' onClick={showDeleteAlert}/>
+        </div>
+      </div>}
+    {!checked && <div className="flex items-center justify-between p-4 bg-white">
     {loading ? (
                 <h1>loading</h1>
               ):error?(
@@ -90,9 +106,9 @@ function PersonMessage() {
    
    <div className="flex items-center">
      <NotificationsIcon className="mr-2" />
-     <MoreHorizIcon />
+     <MoreHorizIcon className='cursor-pointer'/>
    </div>
- </div>
+ </div>}
 
  {user && <MessageBoard sender={user}/>}
 

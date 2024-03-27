@@ -63,13 +63,13 @@ function Profile()
                </div>
                <div className='flex flex-col  justify-between border-2 h-32'>
                   <div>
-                    <DashboardIcon style={{fontSize:'medium'}}/> <span>Dashboard</span>
+                    <DashboardIcon  style={{fontSize:'medium'}}/> <span className='cursor-pointer'>Dashboard</span>
                   </div>
                   <div>
-                    <PeopleOutlineIcon style={{fontSize:'medium'}}/> <span>Employees</span>
+                    <PeopleOutlineIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'>Employees</span>
                   </div>
                   <div>
-                    <EmailIcon style={{fontSize:'medium'}}/> <span>Messages</span>
+                    <EmailIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'>Messages</span>
                   </div>
       
                </div>

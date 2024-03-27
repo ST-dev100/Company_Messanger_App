@@ -127,6 +127,7 @@ type Message{
   FileMessage:String,
   FileName:String,
   FileSize:Float,
+  Base64DataFile:String,
   PosteDate:Date
 }
 type Query{
@@ -148,8 +149,8 @@ type Mutation{
     uploadPhoto(file: Upload!): String
     uploadVideo(file2: Upload!): String   
     loginUser(username:String,password:String):String
-    sendMessage(type:String,text: String!,senderId:ID,reciverId:ID): Message 
-    
+    sendMessage(type:String,text: String,senderId:ID,reciverId:ID,messageFile:Upload): Message 
+    deleteMessage(messageId: ID!,messageType:String): String!
 }  
 
 `
@@ -231,10 +232,35 @@ const resolvers = {
           const SenderInfo =  await Messages.find({Sender:senderId,Reciver:reciverId})
           const ReciverInfo =  await Messages.find({Sender:reciverId,Reciver:senderId})
           const Messagelist = SenderInfo.concat(ReciverInfo);
-          console.log(Messagelist)
           Messagelist.sort((a, b) => new Date(a.PosteDate) - new Date(b.PosteDate));
-          console.log("after Sorted", Messagelist) 
-           return Messagelist
+          let fileData = 'hh';
+          for (const message of Messagelist) {
+            if (message.FileName) {
+                const fileStream = gfs2.openDownloadStreamByName(message.FileName);
+                let fileData = '';
+                
+                await new Promise((resolve, reject) => {
+                    fileStream.on('data', chunk => {
+                        fileData += chunk.toString('base64');
+                    });
+    
+                    fileStream.on('end', () => {
+                        message.FileName = fileData;
+                        resolve();
+                    });
+    
+                    fileStream.on('error', err => {
+                        console.log(`Error streaming file: ${err}`);
+                        reject(err);
+                    });
+                });
+            }
+        }
+    
+        // console.log("after Sorted", Messagelist) 
+        console.log("after Sorted", Messagelist) 
+    
+        return Messagelist;
         }
     },
     Mutation:{
@@ -349,7 +375,7 @@ const resolvers = {
               console.log("Email doesn't exist")   
               }
         },
-        sendMessage: async(parent, { type ,text,reciverId,senderId }) => {
+        sendMessage: async(parent, { type ,text,reciverId,senderId,messageFile }) => {
               if(type==="Text"){
                 const messages = new Messages({
                   Sender:senderId,
@@ -365,6 +391,98 @@ const resolvers = {
                 // pubsub.publish('MESSAGE_ADDED', { messageAdded: messages });
                 console.log(messages)
                     return messages;
+                  }
+                  else if(type === "Pic")
+                  {
+                    const { file} = await messageFile;
+                    const {createReadStream,filename,mimetype} = file
+                    console.log(file)
+                    const uploadStream = gfs2.openUploadStream(filename, { contentType: mimetype });
+                    const stream = createReadStream();
+                    let msg = null;
+                    const result = await new Promise((resolve, reject) => {
+                      stream.pipe(uploadStream)
+                        .on('finish', async () => {
+                          msg =  await Messages.create({
+                            Sender:senderId,
+                            Reciver:reciverId,
+                            MessageType:type,
+                            FileName: filename,
+                            FileSize: uploadStream.bytesWritten,
+                          });
+                          resolve(true);
+                        })
+                        .on('error', (error) => {
+                          reject(error);
+                        });
+                    }); 
+                    const fileStream = gfs2.openDownloadStreamByName(filename);
+                    let fileData = '';
+                    
+                    await new Promise((resolve, reject) => {
+                        fileStream.on('data', chunk => {
+                            fileData += chunk.toString('base64');
+                        });
+        
+                        fileStream.on('end', () => {
+                            msg.FileName = fileData;
+                            resolve();
+                        });
+        
+                        fileStream.on('error', err => {
+                            console.log(`Error streaming file: ${err}`);
+                            reject(err);
+                        });
+                    });
+                pubsub.publish('MESSAGE_ADDED', { messageAdded: msg });
+
+                    return msg
+                  }
+                  else if(type === "Video")
+                  {
+                    const { file} = await messageFile;
+                    const {createReadStream,filename,mimetype} = file
+                    console.log(file)
+                    const uploadStream = gfs2.openUploadStream(filename, { contentType: mimetype });
+                    const stream = createReadStream();
+                    let msg = null;
+                    const result = await new Promise((resolve, reject) => {
+                      stream.pipe(uploadStream)
+                        .on('finish', async () => {
+                          msg =  await Messages.create({
+                            Sender:senderId,
+                            Reciver:reciverId,
+                            MessageType:type,
+                            FileName: filename,
+                            FileSize: uploadStream.bytesWritten,
+                          });
+                          resolve(true);
+                        })
+                        .on('error', (error) => {
+                          reject(error);
+                        });
+                    }); 
+                    const fileStream = gfs2.openDownloadStreamByName(filename);
+                    let fileData = '';
+                    
+                    await new Promise((resolve, reject) => {
+                        fileStream.on('data', chunk => {
+                            fileData += chunk.toString('base64');
+                        });
+        
+                        fileStream.on('end', () => {
+                            msg.FileName = fileData;
+                            resolve();
+                        });
+        
+                        fileStream.on('error', err => {
+                            console.log(`Error streaming file: ${err}`);
+                            reject(err);
+                        });
+                    });
+                pubsub.publish('MESSAGE_ADDED', { messageAdded: msg });
+
+                    return msg 
                   }
                   return null;
 
