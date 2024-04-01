@@ -41,6 +41,11 @@ function PersonMessage() {
   const user = useSelector(state => state.user.user);
   const checked = useSelector(state => state.user.checked);
   const showdeleteAlert = useSelector(state => state.user.showPopup);
+  const count = useSelector(state => state.user.count);
+  const deleteMessage = useSelector(state => state.user.deltedMessages);
+
+  //deltedMessages
+
   const dispatch = useDispatch();
   const {id} = useParams();
   const { loading, error, data } = useQuery(GET_USER_BY_ID, {
@@ -52,6 +57,7 @@ function PersonMessage() {
     console.log("dddd")
     dispatch(deleteAlert())
    }
+
   if(!loading && !error && data)
   {
     // console.log(data.getUserById)
@@ -80,9 +86,10 @@ function PersonMessage() {
       <div className='grid grid-cols-4 p-4 bg-white'>
         <div>
           <ClearIcon className='cursor-pointer' onClick={()=>dispatch(clearCancel())}/>
+          {deleteMessage.length > 0 && <span className='text-xl p-4 mt-1'>{deleteMessage.length}</span>}
         </div>
         <div>
-          <DeleteIcon className='cursor-pointer' onClick={showDeleteAlert}/>
+          <DeleteIcon className='cursor-pointer' onClick={count<=0 ? null : showDeleteAlert}/>
         </div>
       </div>}
     {!checked && <div className="flex items-center justify-between p-4 bg-white">

@@ -130,6 +130,9 @@ type Message{
   Base64DataFile:String,
   PosteDate:Date
 }
+type mssg{
+  strings:[String]
+}
 type Query{
     books:[Book]
     employees:[Emp] 
@@ -150,7 +153,7 @@ type Mutation{
     uploadVideo(file2: Upload!): String   
     loginUser(username:String,password:String):String
     sendMessage(type:String,text: String,senderId:ID,reciverId:ID,messageFile:Upload): Message 
-    deleteMessage(messageId: ID!,messageType:String): String!
+    deleteMessage(messageId: [ID]!): mssg
 }  
 
 `
@@ -486,9 +489,32 @@ const resolvers = {
                   }
                   return null;
 
-      }   
+      },
+      deleteMessage: (parent,{messageId})=>{
+        console.log("message id is",messageId)
+        messageId.map(async(x)=>{
+         const message =await Messages.findById(x)
+         if(message.FileName)
+         {
+          await Messages.deleteOne({ _id: x });
+          const fileId = await gfs2.find({ filename: message.FileName }).toArray();
+          if (fileId.length > 0) {
+            await gfs2.delete(fileId[0]._id);
+            console.log('File successfully deleted from GridFS');
+          } else {
+            console.log('File not found in GridFS');
+          }
+         }
+         else
+         {
+          await Messages.deleteOne({ _id: x });
+          console.log("Text Deleted")
+         }
+        })
+        return {strings:messageId}
+      },  
     },  
-    Subscription: {
+    Subscription: {    
       messageAdded: {
         subscribe: () => pubsub.asyncIterator('MESSAGE_ADDED')
       }

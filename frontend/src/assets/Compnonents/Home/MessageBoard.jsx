@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { addPost } from '../../Store/DisplayMessageSlice';
 import { Send, Attachment, Mic, Videocam } from '@mui/icons-material';
-import { onandoffChecked,cancelAlert} from '../../Store/UserProfileSlice';
+import { onandoffChecked,cancelAlert,increamentCount,dicreamentCount,DeleteMessagesList,removeDeleteMessagesList} from '../../Store/UserProfileSlice';
 
 const MESSAGE_ADDED = gql`
   subscription MessageAdded {
@@ -45,8 +45,37 @@ const SEND_MESSAGE = gql`
     }
   }
 `;
-
+const DELETE_MESSAGE = gql`
+mutation DeleteMessage($messageId: [ID]!) {
+  deleteMessage(messageId: $messageId)
+  {
+    strings
+  }
+}
+`;
 const MessageBoard = () => {
+  const [deleteMessage] = useMutation(DELETE_MESSAGE,{
+    update:(cache,{data})=>
+    {
+      const { getMessage } = cache.readQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+    });
+      console.log("data is",data.deleteMessage.strings)
+      console.log(getMessage)
+      console.log("cache is",cache)
+      const updatedMessages = getMessage.filter(objS => {
+        return !data.deleteMessage.strings.some(objC => objC === objS._id);
+      });
+      cache.writeQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+        data: { getMessage: updatedMessages },
+    });
+    }
+  });
+
+
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [text, setText] = useState('');
   const fileInputRef = useRef(null);
@@ -54,9 +83,22 @@ const MessageBoard = () => {
   const user = useSelector(state => state.user.user);
   const showdeleteAlert = useSelector(state => state.user.showPopup);
   const checked = useSelector(state => state.user.checked);
+  const deleteMessageLst = useSelector(state => state.user.deltedMessages);
+  
   
   const [showPopup, setShowPopup] = useState(false);
-
+  const handleCheckboxChange = (e,sender,reciver,id) => {
+    if (e.target.checked) {
+      // console.log("sender",sender)
+      // console.log("reciver",reciver)
+      // console.log("messageId",id)
+      dispatch(DeleteMessagesList({sender,reciver,id}))
+      dispatch(increamentCount())
+    } else {
+      dispatch(removeDeleteMessagesList({sender,reciver,id}))
+      dispatch(dicreamentCount())
+    }
+  };
   const handleDeleteClick = () => {
     setShowPopup(true);
   };
@@ -66,7 +108,9 @@ const MessageBoard = () => {
   };
   const handleDelete = () => {
     // Add delete functionality here
-    setShowPopup(false);
+    const messageId=deleteMessageLst.map(e=>e.id)
+    deleteMessage({ variables: { messageId } });
+    dispatch(cancelAlert())
   };
   const { id } = useParams();
   
@@ -76,7 +120,7 @@ const MessageBoard = () => {
             query: GET_MESSAGE,
             variables: { senderId: user.id, reciverId: id },
         });
-
+        
         cache.writeQuery({
             query: GET_MESSAGE,
             variables: { senderId: user.id, reciverId: id },
@@ -154,7 +198,10 @@ const MessageBoard = () => {
       console.log('The file is a document');
     }
   };
-
+  if(loading)
+  {
+    return <h1>Loading...</h1>
+  }
   return (
     <>
       <div className="flex flex-col w-full h-80 gap-2 border-4 overflow-y-auto" onClick={()=>dispatch(onandoffChecked())}>
@@ -167,7 +214,8 @@ const MessageBoard = () => {
             >
             {checked && <input 
                 type="checkbox"
-                className="form-checkbox h-4 w-4 text-green-500 rounded-full checked:bg-red-700 mt-0" disabled={showdeleteAlert}
+                className="form-checkbox h-4 w-4 text-green-500 rounded-full checked:bg-red-700 mt-0 cursor-pointer" disabled={showdeleteAlert}
+                onChange={(e) => handleCheckboxChange(e,item.Sender,item.Reciver,item._id)}
             />}
               {item.MessageType === "Text" && (
                 <p>{item.TextMessage}</p>
@@ -188,7 +236,7 @@ const MessageBoard = () => {
       <h1 className='text-white text-xl font-bold'>Are you sure you want to delete the Selected message</h1>
       <div>
         <button className="bg-white text-blue-500 px-4 py-2 mr-2" onClick={()=>dispatch(cancelAlert())}>Cancel</button>
-        <button className="bg-red-500 text-white px-4 py-2">Delete</button>
+        <button className="bg-red-500 text-white px-4 py-2" onClick={()=>handleDelete()}>Delete</button>
       </div>
       
     </div>}

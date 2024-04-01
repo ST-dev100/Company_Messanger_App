@@ -59,10 +59,25 @@ const splitLink = split(
   wsLink,
   uploadLink,
 );
+const cache = new InMemoryCache({
+  typePolicies: {
+      Query: {
+          fields: {
+              getMessage: {
+                  merge(existing = [], incoming) {
+                      return incoming;
+                  },
+              },
+          },
+      },
+  },
+});
+
+
 
 const client = new ApolloClient({
   link: authLink.concat(splitLink),
-  cache: new InMemoryCache(),
+  cache,
 });
 
 // import './index.css'
