@@ -9,6 +9,8 @@ import {Link,Outlet} from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { useQuery,useMutation,gql } from '@apollo/client';
 import Profile from './Profile';
+import { useSelector, useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 
 const GET_Employess = gql`
@@ -21,20 +23,14 @@ const GET_Employess = gql`
   }
 `;
 
-const contacts = [
-  { id: 1, username: 'john_doe', image: '/simon.JPG' },
-  { id: 2, username: 'jane_smith', image: '/simon.JPG' },
-  { id: 3, username: 'mark_johnson', image: '/simon.JPG' },
-  
-  { id: 2, username: 'jane_smith', image: '/simon.JPG' },
-  { id: 3, username: 'mark_johnson', image: '/simon.JPG' },
-  { id: 2, username: 'jane_smith', image: '/simon.JPG' },
-  { id: 3, username: 'mark_johnson', image: '/simon.JPG' },
-  
-];
 
 function Navigation() {
+  // const post = useSelector((state) => state.user.ProfileUser.employee);
+  let post =1
   let newMap = null;
+  let {id} = useParams()
+  console.log(post)
+  console.log(id)
   const { loading, error, data } = useQuery(GET_Employess);
   if(!loading && !error && data)
   {
@@ -47,11 +43,14 @@ function Navigation() {
        }  
        var blob = new Blob([array], {type: 'image/png'});
        var url = URL.createObjectURL(blob);
-       return {userName:e.userName,dataa:url,id:e.id}
+     
+         return {userName:e.userName,dataa:url,id:e.id}
+    
     })
-    // console.log(newMap)
+   
     
   }
+  
     return (
         <div className='grid grid-cols-5 m-2 gap-2'>
           <div className='bg-white rounded-lg lg:col-span-3 col-span-5 h-full grid grid-cols-2'>
@@ -65,23 +64,27 @@ function Navigation() {
                 
               </div>
               <div className="w-full h-96 overflow-y-auto">
-              {loading ? (
-                <h1>loading</h1>
-              ):error?(
-                <h1>error</h1>
-              ):(
+                {loading ? (
+                  <h1>loading</h1>
+                ) : error ? (
+                  <h1>error</h1>
+                ) : (
                   <ul className="divide-y divide-gray-300">
-                    {data && newMap.map((d,i)=> (
-                      <li key={i} className="flex items-center py-2">
-                        <img src={d.dataa} alt={d.usernName} className="w-10 h-10 rounded-full" />
-                        <Link to={`/messages/${d.id}`}><span className="ml-2">{d.userName}</span></Link>
-                        <MoreHorizIcon className='ml-auto cursor-pointer'/>
-                      </li>
-                    ))}
+                    {data &&
+                      newMap.map((d, i) =>
+                        d.id !== post.id ? (
+                          <li key={i} className="flex items-center py-2">
+                            <img src={d.dataa} alt={d.usernName} className="w-10 h-10 rounded-full" />
+                            <Link to={`/messages/${d.id}`}>
+                              <span className="ml-2">{d.userName}</span>
+                            </Link>
+                            <MoreHorizIcon className="ml-auto cursor-pointer" />
+                          </li>
+                        ) : null
+                      )}
                   </ul>
-                  )}
-
-        </div>
+                )}
+              </div>
     
             </div>
             

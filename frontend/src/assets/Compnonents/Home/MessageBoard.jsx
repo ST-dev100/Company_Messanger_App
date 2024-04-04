@@ -53,7 +53,8 @@ mutation DeleteMessage($messageId: [ID]!) {
   }
 }
 `;
-const MessageBoard = () => {
+const MessageBoard = (props) => {
+  console.log("pops is",props.sender)
   const [deleteMessage] = useMutation(DELETE_MESSAGE,{
     update:(cache,{data})=>
     {
@@ -84,9 +85,10 @@ const MessageBoard = () => {
   const showdeleteAlert = useSelector(state => state.user.showPopup);
   const checked = useSelector(state => state.user.checked);
   const deleteMessageLst = useSelector(state => state.user.deltedMessages);
-  
+  console.log("userr",user)
   
   const [showPopup, setShowPopup] = useState(false);
+ 
   const handleCheckboxChange = (e,sender,reciver,id) => {
     if (e.target.checked) {
       // console.log("sender",sender)

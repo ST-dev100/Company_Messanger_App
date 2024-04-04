@@ -22,7 +22,7 @@ const GET_Employee = gql`
   }
 `;
 
-function Profile()
+function Profile2()
 {
   const dispatch = useDispatch();
   var newdataa = null;
@@ -46,7 +46,7 @@ function Profile()
     // dispatch(fetchEmployees())
   }
   return (
-    <div className='border-2 rounded-lg h-full bg-cyan-700 text-white tracking-wider flex flex-col gap-16 content-start items-center'>
+    <div className='border-2 md:col-span-2 rounded-lg h-full bg-cyan-700 text-white tracking-wider flex flex-col gap-16 content-start items-center'>
         {
             loading 
             ? (
@@ -72,11 +72,11 @@ function Profile()
                   <div className='border-b-2'>
                     <PersonAddIcon style={{fontSize:'medium'}}/>
                     <span className='cursor-pointer'> 
-                     <Link> {" "}Add Employee</Link>
+                     <Link to={'/homee/addEmployee'}> {" "}Add Employee</Link>
                     </span>
                   </div>
                   <div className='border-b-2'>
-                    <EmailIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'><Link>Messages</Link></span>
+                    <EmailIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'><Link to={`/homee/message/65e03d12102c7fe85bdec19e`}>Messages</Link></span>
                   </div>
       
                </div>
@@ -90,4 +90,4 @@ function Profile()
   )
 }
 
-export default Profile
+export default Profile2

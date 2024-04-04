@@ -7,6 +7,7 @@ import {Route,Routes} from 'react-router-dom'
 import Navigation from './assets/Compnonents/Home/Navigation';
 import Messages from './assets/Compnonents/Home/Messages';
 import PersonMessage from './assets/Compnonents/Home/PersonMessage';
+import PersonMessage2 from './assets/Compnonents/Home/PersonMessage2';
 import Test from './assets/Compnonents/Home/Test';
 import Test2 from './assets/Compnonents/Home/Test2';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
@@ -19,6 +20,8 @@ import { getMainDefinition } from '@apollo/client/utilities';
 
 import { setContext } from '@apollo/client/link/context';
 import LoginPage from './assets/Compnonents/Home/Login/Login';
+import Navigation2 from './assets/Compnonents/Home/Navigation2';
+import AddEmployee from './assets/Compnonents/Home/AddEmployee';
 
 
 const uploadLink = createUploadLink({
@@ -75,7 +78,7 @@ const cache = new InMemoryCache({
 
 
 
-const client = new ApolloClient({
+export const client = new ApolloClient({
   link: authLink.concat(splitLink),
   cache,
 });
@@ -93,6 +96,25 @@ function App() {
       setInputText('');
     }
   };
+  // const App = () => { const [count, setCount] = useState(0);
+
+  //   return ( 
+  //     <ApolloProvider client={client}>
+  //         <Routes> 
+  //           <Route path="/home" element={<Home />}> 
+  //             <Route path="messages" element={<Messages />}>
+  //               <Route path=":id" element={<PersonMessage />} />
+  //             </Route> 
+  //             <Route path="employees" element={<Employees />} />
+  //             <Route path="dashboard" element={<Dashboard />} /> 
+  //             <Route path="addEmployees" element={<AddEmployees />} /> 
+  //           </Route> 
+  //           <Route path="*" element={<h1>Page not found</h1>} /> 
+  //         </Routes> 
+  //       </ApolloProvider> ); 
+  //       };
+    
+  //   export default App;
 
   return (
     <ApolloProvider client={client}>
@@ -100,6 +122,10 @@ function App() {
       <Routes>
         <Route path='/messages' element={<Navigation/>}>
           <Route path='/messages/:id' element={<PersonMessage/>}/>
+        </Route>
+        <Route path='homee' element={<Navigation2/>}>
+          <Route path='message/:id' element={<PersonMessage2/>}/>
+          <Route path='addEmployee' element={<AddEmployee/>}/>
         </Route>
         <Route path='login' element={<LoginPage/>}/>
         <Route path='/home' element={<Home/>}/>

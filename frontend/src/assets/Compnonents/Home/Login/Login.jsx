@@ -35,7 +35,7 @@ const LoginPage = ()=>{
               document.cookie = `token=${data.loginUser}`;
                // redirect to homepage
               //  sessionStorage.setItem('token', data.loginUser);
-               navigate('/messages/65e03d12102c7fe85bdec19e');
+               navigate('/homee/message/65e03d12102c7fe85bdec19e');
             } else {
               // show error message
             }
