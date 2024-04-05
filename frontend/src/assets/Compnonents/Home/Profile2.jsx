@@ -64,19 +64,27 @@ function Profile2()
                </div>
                <div className='flex flex-col  justify-between  h-32'>
                   <div className='border-b-2'>
-                    <DashboardIcon  style={{fontSize:'medium'}}/> <span className='cursor-pointer'>Dashboard</span>
+                    <DashboardIcon  style={{fontSize:'medium'}}/> <span className='cursor-pointer tracking-widest'>
+                      <Link to={'/homee/dashboard'}>
+                        Dashboard
+                      </Link>
+                      </span>
                   </div>
                   <div className='border-b-2'>
-                    <PeopleOutlineIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'>Employees</span>
+                    <PeopleOutlineIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer tracking-widest'>
+                        <Link to={'/homee/empList'}>
+                          Employees
+                        </Link>
+                      </span>
                   </div>
                   <div className='border-b-2'>
                     <PersonAddIcon style={{fontSize:'medium'}}/>
-                    <span className='cursor-pointer'> 
+                    <span className='cursor-pointer tracking-widest'> 
                      <Link to={'/homee/addEmployee'}> {" "}Add Employee</Link>
                     </span>
                   </div>
-                  <div className='border-b-2'>
-                    <EmailIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer'><Link to={`/homee/message/65e03d12102c7fe85bdec19e`}>Messages</Link></span>
+                  <div className='border-b-2 '>
+                    <EmailIcon style={{fontSize:'medium'}}/> <span className='cursor-pointer tracking-widest'><Link to={`/homee/message/65e03d12102c7fe85bdec19e`}>Messages</Link></span>
                   </div>
       
                </div>

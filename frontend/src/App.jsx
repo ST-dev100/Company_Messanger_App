@@ -22,6 +22,8 @@ import { setContext } from '@apollo/client/link/context';
 import LoginPage from './assets/Compnonents/Home/Login/Login';
 import Navigation2 from './assets/Compnonents/Home/Navigation2';
 import AddEmployee from './assets/Compnonents/Home/AddEmployee';
+import ListOfEmployees from './assets/Compnonents/Home/ListOfEmployees';
+import DashBoard from './assets/Compnonents/Home/Dashboard';
 
 
 const uploadLink = createUploadLink({
@@ -126,6 +128,8 @@ function App() {
         <Route path='homee' element={<Navigation2/>}>
           <Route path='message/:id' element={<PersonMessage2/>}/>
           <Route path='addEmployee' element={<AddEmployee/>}/>
+          <Route path='empList' element={<ListOfEmployees/>}/>
+          <Route path='dashboard' element={<DashBoard/>}/>
         </Route>
         <Route path='login' element={<LoginPage/>}/>
         <Route path='/home' element={<Home/>}/>
