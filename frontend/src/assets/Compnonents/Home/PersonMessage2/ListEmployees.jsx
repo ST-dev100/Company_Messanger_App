@@ -26,12 +26,7 @@ const GET_Employess = gql`
 
 function ListEmployees() {
   let newMap = null;
-  let post =1
-  
-  //deltedMessages
-
-  
-    
+  let post =1 
    const { loading, error, data } = useQuery(GET_Employess);
    
   if(!loading && !error && data)

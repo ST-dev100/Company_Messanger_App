@@ -104,7 +104,7 @@ const Test = () => {
     const handleFileChangee = async(e) => {
       const file = e.target.files[0]
       const formData = new FormData();
-  formData.append('file', file);
+      formData.append('file', file);
       const { data,errors } = await uploadVideo({
         variables: {
           file2:file

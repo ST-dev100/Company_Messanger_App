@@ -4,22 +4,23 @@ import Chart from 'react-apexcharts';
 
 
 const DashBoard = ()=>{
-    const [chartData, setChartData] = useState({
-        options: {
-          chart: {
-            id: 'basic-line',
-          },
-          xaxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-          },
-        },
-        series: [
-          {
-            name: 'series-1',
-            data: [30, 40, 45, 50, 49, 60, 70],
-          },
-        ],
-      });
+  const [chartData, setChartData] = useState({
+    options: {
+      chart: {
+        id: 'basic-line',
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      },
+    },
+    series: [
+      {
+        name: 'series-1',
+        data: [30, 40, 45, 50, 49, 60, 70],
+      },
+    ],
+  });
+  
       const analyticsData = [
         { title: 'Total Visits', value: 1500, series: [75], type: 'bar', color: '#3182CE'},
         { title: 'Pageviews', value: 3200, series: [80], type: 'bar', color: '#38A169'},

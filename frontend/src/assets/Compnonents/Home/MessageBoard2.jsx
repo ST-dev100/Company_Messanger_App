@@ -207,34 +207,38 @@ const MessageBoard2 = (props) => {
   return (
     <>
     <div className="flex flex-col   w-full h-5/6 gap-2  overflow-y-auto">
-      <div className="flex flex-col   w-full h-80 gap-2   overflow-y-auto" onClick={()=>dispatch(onandoffChecked())}>
-        {ms && ms.map((item, index) => {
-          const backgroundColor = item.Sender === user.id ? 'bg-blue-500' : 'bg-white';
-          return (
-            <div
-              key={index}
-              className={`p-4 ${backgroundColor} rounded-lg ${item.Sender === user.id ? 'text-left border-4' : 'text-right border-4'}`}
-            >
-            {checked && <input 
-                type="checkbox"
-                className="form-checkbox h-4 w-4 text-green-500 rounded-full checked:bg-red-700 mt-0 cursor-pointer" disabled={showdeleteAlert}
-                onChange={(e) => handleCheckboxChange(e,item.Sender,item.Reciver,item._id)}
-            />}
-              {item.MessageType === "Text" && (
-                <p>{item.TextMessage}</p>
-              )}
-              {item.MessageType === "Pic" && item.FileName && (
-                <img src={`data:image/jpeg;base64,${item.FileName}`} alt="File" />
-              )}
-               {item.MessageType === 'Video' && item.FileName && (
-                <video controls src={`data:video/mp4;base64,${item.FileName}`}/>
-        )}
-            </div>
-          );
-        })}
-        
-      </div>
-      
+    {ms && ms.length > 0 ? (
+  <div className="flex flex-col w-full h-80 gap-2 overflow-y-auto" onClick={() => dispatch(onandoffChecked())}>
+    {ms.map((item, index) => {
+      const backgroundColor = item.Sender === user.id ? 'bg-blue-500' : 'bg-white';
+      return (
+        <div
+          key={index}
+          className={`p-4 ${backgroundColor} rounded-lg ${item.Sender === user.id ? 'text-left border-4' : 'text-right border-4'}`}
+        >
+          {checked && <input 
+            type="checkbox"
+            className="form-checkbox h-4 w-4 text-green-500 rounded-full checked:bg-red-700 mt-0 cursor-pointer" disabled={showdeleteAlert}
+            onChange={(e) => handleCheckboxChange(e, item.Sender, item.Reciver, item._id)}
+          />}
+          {item.MessageType === "Text" && (
+            <p>{item.TextMessage}</p>
+          )}
+          {item.MessageType === "Pic" && item.FileName && (
+            <img src={`data:image/jpeg;base64,${item.FileName}`} alt="File" />
+          )}
+          {item.MessageType === 'Video' && item.FileName && (
+            <video controls src={`data:video/mp4;base64,${item.FileName}`}/>
+          )}
+        </div>
+      );
+    })}
+  </div>
+) : (
+  <div className="flex flex-col w-full h-80 gap-2 overflow-y-auto">empty</div>
+)}
+
+     
       <div className="flex items-center  border border-gray-300 gap-2 rounded-lg p-2 mt-0">
         <input 
           type="text" 

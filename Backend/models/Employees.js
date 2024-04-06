@@ -5,6 +5,7 @@ const employeeSchema = new mongoose.Schema({
   data: Buffer,
   // contentType: String,
   occupation:String,
+  gender:String,
   email:String,
   userName:String,
   firstName:String,

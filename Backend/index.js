@@ -154,6 +154,7 @@ type Mutation{
     loginUser(username:String,password:String):String
     sendMessage(type:String,text: String,senderId:ID,reciverId:ID,messageFile:Upload): Message 
     deleteMessage(messageId: [ID]!): mssg
+    addEmployee(employeePic: Upload,fullName: String,gender:String,postion:String,password:String,email:String,userName:String):String
 }  
 
 `
@@ -306,6 +307,34 @@ const resolvers = {
               });
            return 1222
         },
+    addEmployee:async(_,{employeePic,fullName,gender,postion,password,email,userName})=>{
+      const  filee = await employeePic;
+      const {createReadStream,filename,mimetype} = filee.file
+      const stream = createReadStream();
+      let bufferr = Buffer.alloc(0)
+      stream.on('data',chunk=>{
+        bufferr = Buffer.concat([bufferr,chunk])
+       })
+       stream.on('end',async()=>{
+        const salt =await bcrypt.genSalt(10);
+        const hash =await bcrypt.hash(password, salt);
+        const buffer = fs.readFileSync('simon.jpg')
+        const employee = new Employee({  
+        
+          data: bufferr,
+          occupation:postion,
+          email:email,
+          userName:userName,
+          firstName:fullName.split(" ")[0],
+          lastName:fullName.split(" ")[1],
+          gender,
+          password:hash   
+        });
+        await employee.save();
+       })
+       return "employee added" 
+    }
+        ,
         uploadPhoto: async (_, { file }) => {   
           const  filee = await file;
           const {createReadStream,filename,mimetype} = filee.file
@@ -366,7 +395,7 @@ const resolvers = {
               if(x)
               {
                 const token = jwt.sign({ id:userName[0]._id}, 'PRIVATE');
-              context.res.cookie("token",token);
+                context.res.cookie("token",token);
                 return token
               }
               else
