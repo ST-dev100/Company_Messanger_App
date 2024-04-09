@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { addPost } from '../../Store/DisplayMessageSlice';
 import { Send, Attachment, Mic, Videocam } from '@mui/icons-material';
 import { onandoffChecked,cancelAlert,increamentCount,dicreamentCount,DeleteMessagesList,removeDeleteMessagesList} from '../../Store/UserProfileSlice';
-
+import {client} from '../../../App'
 const MESSAGE_ADDED = gql`
   subscription MessageAdded {
     messageAdded {
@@ -14,6 +14,8 @@ const MESSAGE_ADDED = gql`
       Reciver
       MessageType
       TextMessage
+      FileName
+      PosteDate
     }
   }
 `;
@@ -116,20 +118,30 @@ const MessageBoard2 = (props) => {
   };
   const { id } = useParams();
   
-  const [sendMessage] = useMutation(SEND_MESSAGE, {
-    update(cache, { data: { sendMessage } }) {
-        const { getMessage } = cache.readQuery({
-            query: GET_MESSAGE,
-            variables: { senderId: user.id, reciverId: id },
-        });
-        
-        cache.writeQuery({
-            query: GET_MESSAGE,
-            variables: { senderId: user.id, reciverId: id },
-            data: { getMessage: [...getMessage, sendMessage] },
-        });
-    },
-});
+  const [sendMessage] = useMutation(SEND_MESSAGE) 
+  //   {
+  //   update(cache, { data: { sendMessage } }) {
+  //     const { getMessage } = cache.readQuery({
+  //       query: GET_MESSAGE,
+  //       variables: { senderId: user.id, reciverId: id },
+  //     });
+  //     console.log("current cache",cache.data.data)
+  //     // Merge the previous messages with the new message and update the cache
+  //     const updatedMessages = [
+  //       ...getMessage,
+  //       sendMessage,
+  //     ];
+  
+  //     cache.writeQuery({
+  //       query: GET_MESSAGE,
+  //       variables: { senderId: user.id, reciverId: id },
+  //       data: { getMessage: updatedMessages },
+  //     });
+  //   },
+  // });
+  
+  
+
 
   
   const { loading, error, data } = useQuery(GET_MESSAGE, {
@@ -143,10 +155,26 @@ const MessageBoard2 = (props) => {
     }
     return null;
   });
+  const updateCache = (newMessage) => {
+    const cache = client.cache;
+    const { getMessage } = cache.readQuery({
+      query: GET_MESSAGE,
+      variables: { senderId: user.id, reciverId: id },
+    });
 
+    // Update the cache with the new message
+    const updatedMessages = [...getMessage, newMessage];
+
+    cache.writeQuery({
+      query: GET_MESSAGE,
+      variables: { senderId: user.id, reciverId: id },
+      data: { getMessage: updatedMessages },
+    });
+  };
   useEffect(() => {
     if (subscriptionData) {
       const newMessage = subscriptionData.messageAdded;
+      updateCache(newMessage);
       setMs(prevMessages => {
         if (!prevMessages.find(message => message._id === newMessage._id)) {
           return [...prevMessages, newMessage];

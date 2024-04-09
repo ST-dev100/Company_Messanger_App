@@ -110,6 +110,11 @@ type Emp{
   userName:String
   dataa:String
   id:ID
+  occupation:String 
+  gender:String 
+  email:String 
+  firstName:String 
+  lastName:String
 }
 type IndivdualEmp{
   userName:String
@@ -175,12 +180,13 @@ const resolvers = {
         },
         employees:async(_,args,context)=>
         {
-          const emp =await Employee.find({},'userName data _id');
+          const emp =await Employee.find({},'userName data _id occupation gender email firstName lastName password')
+          console.log(emp)
           const newEmp = emp.map(e=>{
               //  console.log(e.data.toString('base64')) 
                const base64data = e.data.toString('base64')
               //  console.log(base64data)
-               return {userName:e.userName,dataa:base64data,id:e._id}     
+               return {userName:e.userName,dataa:base64data,id:e._id,gender:e.gender,email:e.email,firstName:e.firstName,lastName:e.lastName,occupation:e.occupation}     
           }) 
           return newEmp
         },

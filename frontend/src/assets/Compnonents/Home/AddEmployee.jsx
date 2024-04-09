@@ -17,9 +17,14 @@ const AddEmployee = () => {
     const [gender, setGender] = useState('');
     const [workPosition, setWorkPosition] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [addEmployee] = useMutation(ADD_EMPLOYEE,{
-      update:(cache,data)=>{
-        console.log(data)
+      update:(cache,{ data: { addEmployee }})=>{
+        setSuccessMessage('Employee added successfully!');
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 3000); // hide message after 3 seconds
+        console.log("the data",addEmployee)
       }
     });
     const [showPassword, setShowPassword] = useState(false);
@@ -64,6 +69,7 @@ const AddEmployee = () => {
               </label>
           </div>
           <p className='ml-9 font-light tracking-wide'> Change Profile Picture</p>
+          {successMessage && <p className="bg-green-200 text-green-800 p-4 my-4">{successMessage}</p>}
         </div>
         <div className='col-span-3'>
           <div className="flex min-h-screen">
