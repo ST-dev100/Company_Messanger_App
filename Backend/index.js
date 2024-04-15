@@ -149,6 +149,7 @@ type Query{
 
 type Subscription {
   messageAdded:Message
+  messageDeleted:[String]
 }
 type Mutation{
     addUser(name:String!,author:String!):ID!,
@@ -545,13 +546,17 @@ const resolvers = {
           await Messages.deleteOne({ _id: x });
           console.log("Text Deleted")
          }
-        })
+        }) 
+        pubsub.publish('MESSAGE_DELETED', { messageDeleted: messageId });
         return {strings:messageId}
       },  
     },  
     Subscription: {    
       messageAdded: {
         subscribe: () => pubsub.asyncIterator('MESSAGE_ADDED')
+      },
+      messageDeleted: {
+        subscribe: () => pubsub.asyncIterator('MESSAGE_DELETED')
       }
     },
 }

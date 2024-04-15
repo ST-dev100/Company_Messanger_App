@@ -1,14 +1,20 @@
-{data.employees.map((d,i)=>(
-            <h1 key={i}>{d.userName}
-            {d.userName + '-'}
-            </h1>
-            
-        ))}
-        <button  className="border-4 bg-cyan-300"
-        onClick={(e)=>updateData()}
-        >send and show the magic</button><br/>
-        
-        <input type="file" onChange={handleFileChange}/>
-        <br/>
-        <br/>
-        <h1>Hi</h1> 
+,{
+    update:(cache,{data})=>
+    {
+      const { getMessage } = cache.readQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+    });
+      console.log("data is",data.deleteMessage.strings)
+      console.log(getMessage)
+      console.log("cache is",cache)
+      const updatedMessages = getMessage.filter(objS => {
+        return !data.deleteMessage.strings.some(objC => objC === objS._id);
+      });
+      cache.writeQuery({
+        query: GET_MESSAGE,
+        variables: { senderId: user.id, reciverId: id },
+        data: { getMessage: updatedMessages },
+    });
+    }
+  }

@@ -19,6 +19,10 @@ const MESSAGE_ADDED = gql`
     }
   }
 `;
+const DELETEMESSAGE = gql` 
+subscription MessageDeleted {
+  messageDeleted
+}`;
 
 const GET_MESSAGE = gql`
   query GetMessage($senderId: ID, $reciverId: ID) {
@@ -57,28 +61,7 @@ mutation DeleteMessage($messageId: [ID]!) {
 `;
 const MessageBoard2 = (props) => {
   console.log("pops is",props.sender)
-  const [deleteMessage] = useMutation(DELETE_MESSAGE,{
-    update:(cache,{data})=>
-    {
-      const { getMessage } = cache.readQuery({
-        query: GET_MESSAGE,
-        variables: { senderId: user.id, reciverId: id },
-    });
-      console.log("data is",data.deleteMessage.strings)
-      console.log(getMessage)
-      console.log("cache is",cache)
-      const updatedMessages = getMessage.filter(objS => {
-        return !data.deleteMessage.strings.some(objC => objC === objS._id);
-      });
-      cache.writeQuery({
-        query: GET_MESSAGE,
-        variables: { senderId: user.id, reciverId: id },
-        data: { getMessage: updatedMessages },
-    });
-    }
-  });
-
-
+  const [deleteMessage] = useMutation(DELETE_MESSAGE);
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [text, setText] = useState('');
   const fileInputRef = useRef(null);
@@ -118,36 +101,13 @@ const MessageBoard2 = (props) => {
   };
   const { id } = useParams();
   
-  const [sendMessage] = useMutation(SEND_MESSAGE) 
-  //   {
-  //   update(cache, { data: { sendMessage } }) {
-  //     const { getMessage } = cache.readQuery({
-  //       query: GET_MESSAGE,
-  //       variables: { senderId: user.id, reciverId: id },
-  //     });
-  //     console.log("current cache",cache.data.data)
-  //     // Merge the previous messages with the new message and update the cache
-  //     const updatedMessages = [
-  //       ...getMessage,
-  //       sendMessage,
-  //     ];
-  
-  //     cache.writeQuery({
-  //       query: GET_MESSAGE,
-  //       variables: { senderId: user.id, reciverId: id },
-  //       data: { getMessage: updatedMessages },
-  //     });
-  //   },
-  // });
-  
-  
-
-
-  
+  const [sendMessage] = useMutation(SEND_MESSAGE)   
   const { loading, error, data } = useQuery(GET_MESSAGE, {
     variables: { senderId: user.id, reciverId: id },
   });
   const { data: subscriptionData } = useSubscription(MESSAGE_ADDED);
+  const { data: messageDeleted } = useSubscription(DELETEMESSAGE);
+
 
   const [ms, setMs] = useState(() => {
     if (!loading && !error && data) {
@@ -157,14 +117,33 @@ const MessageBoard2 = (props) => {
   });
   const updateCache = (newMessage) => {
     const cache = client.cache;
-    const { getMessage } = cache.readQuery({
+    const cachedData = cache.readQuery({
       query: GET_MESSAGE,
       variables: { senderId: user.id, reciverId: id },
     });
-
-    // Update the cache with the new message
+  
+    const getMessage = cachedData?.getMessage || [];
+  
     const updatedMessages = [...getMessage, newMessage];
-
+  
+    cache.writeQuery({
+      query: GET_MESSAGE,
+      variables: { senderId: user.id, reciverId: id },
+      data: { getMessage: updatedMessages },
+    });
+  };
+  
+  const deleteCache = (deletedMessageId) => {
+    const cache = client.cache;
+    const cachedData = cache.readQuery({
+      query: GET_MESSAGE,
+      variables: { senderId: user.id, reciverId: id },
+    });
+  
+    const getMessage = cachedData?.getMessage || [];
+    const updatedMessages = getMessage.filter(message => !deletedMessageId.includes(message._id));
+    const deleteMessages = getMessage.filter(message => message._id !== deletedMessageId);
+  
     cache.writeQuery({
       query: GET_MESSAGE,
       variables: { senderId: user.id, reciverId: id },
@@ -183,15 +162,15 @@ const MessageBoard2 = (props) => {
       });
     }
   }, [subscriptionData]);
-
-  const updateMessages = (newMessage) => {
-    setMs(prevMessages => {
-      if (!prevMessages.find(message => message._id === newMessage._id)) {
-        return [...prevMessages, newMessage];
-      }
-      return prevMessages;
-    });
-  };
+  
+  useEffect(()=>{
+    if(messageDeleted){
+      const deletedMessageId = messageDeleted.messageDeleted;
+      deleteCache(deletedMessageId);
+      console.log("deleted id",deletedMessageId);
+    }
+  },[messageDeleted])
+  
 
   useEffect(() => {
     if (!loading && !error && data) {
