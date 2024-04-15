@@ -15,5 +15,5 @@
   
 <br>
 ## :point_right: Add Employee
-  ![This is an alt text.](Screenshot(188).png)
+  ![This is an alt text.](addEmp.png)
  
