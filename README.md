@@ -10,7 +10,7 @@
   ![This is an alt text.](app-1.png)
 <br>
 ## :point_right: Employee emp-1 Account
-  ![This is an alt text.](Screenshot(193).png)
+  ![This is an alt text.](app-2.png)
   
   
 <br>
